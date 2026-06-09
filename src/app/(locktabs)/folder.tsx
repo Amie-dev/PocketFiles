@@ -1,3 +1,4 @@
+import ChangePinModal from "@/components/ChangePinModal";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { eq } from "drizzle-orm";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
@@ -22,15 +23,17 @@ import { db } from "../../../db/database";
 import { FileItem, filesTable, Folder, foldersTable } from "../../../db/schema";
 import migrations from "../../../drizzle/migrations";
 
-export default function FolderScreen() {
+export default function PrivateFolderScreen() {
   const { success, error } = useMigrations(db, migrations);
 
   const [folders, setFolders] = useState<Folder[]>([]);
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [folderName, setFolderName] = useState("");
-  const [isPrivateFolder, setIsPrivateFolder] = useState<boolean>(false);
+  const [isPrivateFolder, setIsPrivateFolder] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [isChangePin, setIsChangePin] = useState(false);
 
+  // Load private folders
   async function loadFolders() {
     const result = await db
       .select()
@@ -48,6 +51,7 @@ export default function FolderScreen() {
     }, [success]),
   );
 
+  // Create folder
   async function createFolder() {
     if (!folderName.trim()) {
       Alert.alert("Folder name required", "Please enter folder name");
@@ -68,7 +72,7 @@ export default function FolderScreen() {
       });
 
       setFolderName("");
-      setIsPrivateFolder(false);
+      setIsPrivateFolder(true);
       setOpenCreateModal(false);
       await loadFolders();
     } catch (error) {
@@ -79,6 +83,7 @@ export default function FolderScreen() {
     }
   }
 
+  // Delete folder and files
   async function deleteFolder(folder: Folder) {
     Alert.alert(
       "Delete Folder",
@@ -130,6 +135,7 @@ export default function FolderScreen() {
     );
   }
 
+  // Error UI
   if (error) {
     return (
       <View style={styles.center}>
@@ -138,10 +144,11 @@ export default function FolderScreen() {
     );
   }
 
+  // Loading UI
   if (!success) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#2563EB" />
+        <ActivityIndicator color="#10B981" />
         <Text style={styles.loadingText}>Migration is in progress...</Text>
       </View>
     );
@@ -149,27 +156,31 @@ export default function FolderScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["left", "right"]}>
+      {/* Header */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>Folders</Text>
+          <Text style={styles.title}>Private Folders</Text>
           <Text style={styles.subtitle}>
-            {folders.length} public folder{folders.length === 1 ? "" : "s"}
+            {folders.length} private folder{folders.length === 1 ? "" : "s"}
           </Text>
         </View>
 
-        <Pressable
-          disabled={loading}
-          onPress={() => setOpenCreateModal(true)}
-          style={({ pressed }) => [
-            styles.headerAddButton,
-            pressed && styles.pressed,
-            loading && styles.disabled,
-          ]}
-        >
-          <Ionicons name="add" size={26} color="#FFFFFF" />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            disabled={loading}
+            onPress={() => setOpenCreateModal(true)}
+            style={({ pressed }) => [
+              styles.headerAddButton,
+              pressed && styles.pressed,
+              loading && styles.disabled,
+            ]}
+          >
+            <Ionicons name="add" size={26} color="#FFFFFF" />
+          </Pressable>
+        </View>
       </View>
 
+      {/* Folder list */}
       <FlatList
         data={folders}
         keyExtractor={(item) => item.id.toString()}
@@ -178,13 +189,13 @@ export default function FolderScreen() {
         ListHeaderComponent={
           <View style={styles.infoCard}>
             <View style={styles.infoIconBox}>
-              <Ionicons name="folder-open" size={28} color="#2563EB" />
+              <Ionicons name="lock-closed" size={26} color="#10B981" />
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={styles.infoTitle}>Organize your files</Text>
+              <Text style={styles.infoTitle}>Secure private folders</Text>
               <Text style={styles.infoSubtitle}>
-                Tap a folder to view files. Delete removes all files inside.
+                Files inside private folders are protected by your PIN.
               </Text>
             </View>
           </View>
@@ -192,11 +203,25 @@ export default function FolderScreen() {
         ListEmptyComponent={
           <View style={styles.emptyBox}>
             <Ionicons name="folder-open-outline" size={46} color="#94A3B8" />
-            <Text style={styles.emptyTitle}>No folders yet</Text>
+            <Text style={styles.emptyTitle}>No private folders yet</Text>
             <Text style={styles.emptyText}>
-              Tap the + button to create your first folder.
+              Tap the + button to create your first private folder.
             </Text>
           </View>
+        }
+        ListFooterComponent={
+          <Pressable
+            onPress={() => setIsChangePin(true)}
+            style={({ pressed }) => [
+              styles.changePinButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Ionicons name="key-outline" size={21} color="#10B981" />
+            <Text style={{ color: "#065F46", fontWeight: "900" }}>
+              Change PIN
+            </Text>
+          </Pressable>
         }
         renderItem={({ item }) => (
           <Pressable
@@ -207,7 +232,7 @@ export default function FolderScreen() {
             ]}
           >
             <View style={styles.folderIcon}>
-              <Ionicons name="folder" size={30} color="#2563EB" />
+              <Ionicons name="folder" size={30} color="#10B981" />
             </View>
 
             <View style={{ flex: 1 }}>
@@ -215,9 +240,7 @@ export default function FolderScreen() {
                 {item.name}
               </Text>
 
-              <Text style={styles.folderMeta}>
-                {item.isPrivate ? "Private folder" : "Public folder"}
-              </Text>
+              <Text style={styles.folderMeta}>Private folder</Text>
             </View>
 
             <Pressable
@@ -233,6 +256,13 @@ export default function FolderScreen() {
         )}
       />
 
+      {/* Change PIN modal */}
+      <ChangePinModal
+        visible={isChangePin}
+        onClose={() => setIsChangePin(false)}
+      />
+
+      {/* Create folder modal */}
       <Modal
         visible={openCreateModal}
         transparent
@@ -242,13 +272,13 @@ export default function FolderScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalIconBox}>
-              <Ionicons name="folder" size={34} color="#2563EB" />
+              <Ionicons name="folder" size={34} color="#10B981" />
             </View>
 
             <Text style={styles.modalTitle}>Create Folder</Text>
 
             <Text style={styles.modalSubtitle}>
-              Give your folder a clear name.
+              Create a folder for private files.
             </Text>
 
             <TextInput
@@ -259,8 +289,8 @@ export default function FolderScreen() {
               style={styles.modalInput}
               autoFocus
             />
-            {/* Privacy section */}
 
+            {/* Privacy switch */}
             <View style={styles.privateCard}>
               <View style={styles.privateLeft}>
                 <View
@@ -284,7 +314,7 @@ export default function FolderScreen() {
                   <Text style={styles.privateSubtitle}>
                     {isPrivateFolder
                       ? "Only visible after PIN unlock"
-                      : "Visible in normal public mode"}
+                      : "Visible in public mode"}
                   </Text>
                 </View>
               </View>
@@ -294,35 +324,38 @@ export default function FolderScreen() {
                 onValueChange={setIsPrivateFolder}
               />
             </View>
-          </View>
-          <Pressable
-            disabled={loading}
-            onPress={createFolder}
-            style={({ pressed }) => [
-              styles.createButton,
-              pressed && styles.pressed,
-              loading && styles.disabled,
-            ]}
-          >
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <>
-                <Ionicons name="add" size={22} color="#FFFFFF" />
-                <Text style={styles.createText}>Create Folder</Text>
-              </>
-            )}
-          </Pressable>
 
-          <Pressable
-            style={styles.cancelButton}
-            onPress={() => {
-              setFolderName("");
-              setOpenCreateModal(false);
-            }}
-          >
-            <Text style={styles.cancelText}>Cancel</Text>
-          </Pressable>
+            {/* Modal buttons */}
+            <Pressable
+              disabled={loading}
+              onPress={createFolder}
+              style={({ pressed }) => [
+                styles.createButton,
+                pressed && styles.pressed,
+                loading && styles.disabled,
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <Ionicons name="add" size={22} color="#FFFFFF" />
+                  <Text style={styles.createText}>Create Folder</Text>
+                </>
+              )}
+            </Pressable>
+
+            <Pressable
+              style={styles.cancelButton}
+              onPress={() => {
+                setFolderName("");
+                setIsPrivateFolder(true);
+                setOpenCreateModal(false);
+              }}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </Pressable>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
@@ -338,57 +371,88 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingTop: 18,
-    paddingBottom: 12,
+    paddingBottom: 14,
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
   },
 
   title: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "900",
-    color: "#111827",
+    color: "#0F172A",
+    letterSpacing: -0.5,
   },
 
   subtitle: {
     marginTop: 4,
     color: "#64748B",
+    fontSize: 13,
     fontWeight: "700",
   },
 
+  headerActions: {
+    flexDirection: "row",
+    gap: 10,
+  },
+
   headerAddButton: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: "#2563EB",
+    width: 52,
+    height: 52,
+    borderRadius: 20,
+    backgroundColor: "#10B981",
     alignItems: "center",
     justifyContent: "center",
-    elevation: 6,
+
+    elevation: 8,
+    shadowColor: "#10B981",
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+  },
+
+  changePinButton: {
+    marginTop: 4,
+    minHeight: 56,
+    borderRadius: 22,
+    backgroundColor: "#ECFDF5",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    flexDirection: "row",
+    gap: 10,
   },
 
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 120,
+    paddingBottom: 130,
   },
 
   infoCard: {
     marginTop: 8,
     marginBottom: 16,
     backgroundColor: "#FFFFFF",
-    borderRadius: 24,
+    borderRadius: 26,
     padding: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0",
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
+
+    elevation: 2,
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
 
   infoIconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 20,
-    backgroundColor: "#EFF6FF",
+    width: 58,
+    height: 58,
+    borderRadius: 22,
+    backgroundColor: "#ECFDF5",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -396,7 +460,7 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 15,
     fontWeight: "900",
-    color: "#111827",
+    color: "#0F172A",
   },
 
   infoSubtitle: {
@@ -409,7 +473,7 @@ const styles = StyleSheet.create({
 
   folderCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 24,
+    borderRadius: 26,
     padding: 16,
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -417,13 +481,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     marginBottom: 12,
+
+    elevation: 2,
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
 
   folderIcon: {
-    width: 54,
-    height: 54,
-    borderRadius: 19,
-    backgroundColor: "#EFF6FF",
+    width: 56,
+    height: 56,
+    borderRadius: 22,
+    backgroundColor: "#ECFDF5",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -431,7 +501,7 @@ const styles = StyleSheet.create({
   folderName: {
     fontSize: 16,
     fontWeight: "900",
-    color: "#111827",
+    color: "#0F172A",
   },
 
   folderMeta: {
@@ -440,10 +510,112 @@ const styles = StyleSheet.create({
     color: "#64748B",
     fontWeight: "700",
   },
+
+  deleteButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    backgroundColor: "#FEF2F2",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#FEE2E2",
+  },
+
+  emptyBox: {
+    marginTop: 32,
+    padding: 34,
+    borderRadius: 28,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+  },
+
+  emptyTitle: {
+    marginTop: 12,
+    fontSize: 17,
+    fontWeight: "900",
+    color: "#0F172A",
+  },
+
+  emptyText: {
+    marginTop: 5,
+    color: "#64748B",
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15,23,42,0.58)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+
+  modalCard: {
+    width: "100%",
+    borderRadius: 32,
+    backgroundColor: "#FFFFFF",
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+
+    elevation: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
+  },
+
+  modalIconBox: {
+    width: 74,
+    height: 74,
+    borderRadius: 30,
+    backgroundColor: "#ECFDF5",
+    alignSelf: "center",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+  },
+
+  modalTitle: {
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#0F172A",
+    letterSpacing: -0.3,
+  },
+
+  modalSubtitle: {
+    marginTop: 6,
+    textAlign: "center",
+    color: "#64748B",
+    fontSize: 13,
+    fontWeight: "600",
+    lineHeight: 20,
+  },
+
+  modalInput: {
+    marginTop: 20,
+    height: 56,
+    borderRadius: 20,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    paddingHorizontal: 16,
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+
   privateCard: {
     marginTop: 18,
     backgroundColor: "#F8FAFC",
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: "#E2E8F0",
     padding: 14,
@@ -462,7 +634,7 @@ const styles = StyleSheet.create({
   privateIcon: {
     width: 46,
     height: 46,
-    borderRadius: 16,
+    borderRadius: 18,
     backgroundColor: "#EFF6FF",
     alignItems: "center",
     justifyContent: "center",
@@ -475,7 +647,7 @@ const styles = StyleSheet.create({
   privateTitle: {
     fontSize: 15,
     fontWeight: "900",
-    color: "#111827",
+    color: "#0F172A",
   },
 
   privateSubtitle: {
@@ -485,106 +657,21 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
 
-  deleteButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 15,
-    backgroundColor: "#FEF2F2",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  emptyBox: {
-    marginTop: 32,
-    padding: 32,
-    borderRadius: 26,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "#CBD5E1",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-  },
-
-  emptyTitle: {
-    marginTop: 12,
-    fontSize: 17,
-    fontWeight: "900",
-    color: "#111827",
-  },
-
-  emptyText: {
-    marginTop: 5,
-    color: "#64748B",
-    fontWeight: "600",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(15,23,42,0.55)",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-
-  modalCard: {
-    width: "100%",
-    borderRadius: 30,
-    backgroundColor: "#FFFFFF",
-    padding: 24,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-
-  modalIconBox: {
-    width: 72,
-    height: 72,
-    borderRadius: 28,
-    backgroundColor: "#EFF6FF",
-    alignSelf: "center",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 14,
-  },
-
-  modalTitle: {
-    textAlign: "center",
-    fontSize: 24,
-    fontWeight: "900",
-    color: "#111827",
-  },
-
-  modalSubtitle: {
-    marginTop: 6,
-    textAlign: "center",
-    color: "#64748B",
-    fontWeight: "600",
-  },
-
-  modalInput: {
-    marginTop: 20,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: "#F8FAFC",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    paddingHorizontal: 16,
-    fontSize: 15,
-    fontWeight: "800",
-    color: "#111827",
-  },
-
   createButton: {
     marginTop: 18,
     height: 56,
-    borderRadius: 20,
-    backgroundColor: "#2563EB",
+    borderRadius: 22,
+    backgroundColor: "#10B981",
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
-    paddingHorizontal: 15,
     gap: 8,
+
+    elevation: 6,
+    shadowColor: "#10B981",
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
   },
 
   createText: {
@@ -594,17 +681,17 @@ const styles = StyleSheet.create({
   },
 
   cancelButton: {
-    borderRadius: 20,
     marginTop: 14,
+    height: 52,
+    borderRadius: 20,
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    backgroundColor: "#64748B",
+    justifyContent: "center",
   },
 
   cancelText: {
-    color: "#FFFFFF",
-    fontSize: 16,
+    color: "#64748B",
+    fontSize: 15,
     fontWeight: "900",
   },
 
