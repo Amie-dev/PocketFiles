@@ -141,7 +141,7 @@ export default function FolderScreen() {
   if (!success) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#2563EB" />
+        <ActivityIndicator color="#4a67a3" />
         <Text style={styles.loadingText}>Migration is in progress...</Text>
       </View>
     );
@@ -166,7 +166,7 @@ export default function FolderScreen() {
             loading && styles.disabled,
           ]}
         >
-          <Ionicons name="add" size={26} color="#FFFFFF" />
+          <Ionicons name="add" size={36} color="#FFFFFF" />
         </Pressable>
       </View>
 
@@ -178,7 +178,7 @@ export default function FolderScreen() {
         ListHeaderComponent={
           <View style={styles.infoCard}>
             <View style={styles.infoIconBox}>
-              <Ionicons name="folder-open" size={28} color="#2563EB" />
+              <Ionicons name="folder-open" size={28} color="#3f5b97" />
             </View>
 
             <View style={{ flex: 1 }}>
@@ -207,7 +207,7 @@ export default function FolderScreen() {
             ]}
           >
             <View style={styles.folderIcon}>
-              <Ionicons name="folder" size={30} color="#2563EB" />
+              <Ionicons name="folder" size={30} color="#4c69a7" />
             </View>
 
             <View style={{ flex: 1 }}>
@@ -242,7 +242,7 @@ export default function FolderScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalIconBox}>
-              <Ionicons name="folder" size={34} color="#2563EB" />
+              <Ionicons name="folder" size={34} color="#4d70be" />
             </View>
 
             <Text style={styles.modalTitle}>Create Folder</Text>
@@ -308,8 +308,8 @@ export default function FolderScreen() {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <>
-                <Ionicons name="add" size={22} color="#FFFFFF" />
-                <Text style={styles.createText}>Create Folder</Text>
+                <Ionicons name="folder" size={22} color="#FFFFFF" />
+                <Text style={styles.createText}>Save Folder</Text>
               </>
             )}
           </Pressable>
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 18,
-    backgroundColor: "#2563EB",
+    backgroundColor: "#6f8bc7",
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,

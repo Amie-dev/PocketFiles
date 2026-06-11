@@ -127,7 +127,7 @@ export default function HomeScreen() {
             style={styles.filterButton}
             onPress={() => setActiveFilter("favorite")}
           >
-            <Ionicons name="options" size={22} color="#2563EB" />
+            <Ionicons name="options" size={22} color="#779ced" />
           </Pressable>
         </View>
 
@@ -238,8 +238,8 @@ const styles = StyleSheet.create({
   },
 
   activeFilterChip: {
-    backgroundColor: "#2563EB",
-    borderColor: "#2563EB",
+    backgroundColor: "#6e84b3",
+    borderColor: "#505257",
   },
 
   filterText: {

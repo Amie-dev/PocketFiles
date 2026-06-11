@@ -62,7 +62,7 @@ export default function PinModeSwitcher() {
           <Ionicons
             name={isLocked ? "lock-open" : "lock-closed"}
             size={22}
-            color={isLocked ? "#10B981" : "#2563EB"}
+            color={isLocked ? "#10B981" : "#4b5d82"}
           />
         </View>
       </Pressable>

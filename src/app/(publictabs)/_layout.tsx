@@ -62,7 +62,7 @@ export default function PublicTabsLayout() {
 
         tabBarShowLabel: false,
 
-        tabBarActiveTintColor: "#2563EB",
+        tabBarActiveTintColor: "#4e5e80",
         tabBarInactiveTintColor: "#94A3B8",
 
         tabBarStyle: {
@@ -108,10 +108,10 @@ export default function PublicTabsLayout() {
           tabBarIcon: ({ focused, color }) => (
             <View
               style={{
-                width: 54,
-                height: 54,
+                width: 48,
+                height: 48,
                 borderRadius: 27,
-                backgroundColor: "#2563EB",
+                backgroundColor: "#7785a1",
                 justifyContent: "center",
                 alignItems: "center",
                 marginTop: -20,
@@ -119,8 +119,8 @@ export default function PublicTabsLayout() {
             >
               <Ionicons
                 name="add"
-                size={30}
-                color="#FFFFFF"
+                size={34}
+                color="#eed2d2"
               />
             </View>
           ),
