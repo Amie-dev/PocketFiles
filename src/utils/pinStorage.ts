@@ -24,45 +24,28 @@ export async function checkPin(inputPin: string): Promise<boolean> {
 
   return savedPin === inputPin;
 }
-
 export async function changePin(
   oldPin: string,
   newPin: string
-): Promise<{
-  success: boolean;
-  message: string;
-}> {
+): Promise<{ success: boolean; message: string }> {
   const savedPin = await getPin();
 
   if (!savedPin) {
-    return {
-      success: false,
-      message: "No PIN found",
-    };
+    return { success: false, message: "No PIN found" };
   }
 
   if (savedPin !== oldPin) {
-    return {
-      success: false,
-      message: "Current PIN is incorrect",
-    };
+    return { success: false, message: "Current PIN is incorrect" };
   }
 
-  if (newPin.length < 4) {
-    return {
-      success: false,
-      message: "PIN must be at least 4 digits",
-    };
+  if (newPin.length !== 4) {
+    return { success: false, message: "PIN must be 4 digits" };
   }
 
   await SecureStore.setItemAsync(PIN_KEY, newPin);
 
-  return {
-    success: true,
-    message: "PIN changed successfully",
-  };
+  return { success: true, message: "PIN changed successfully" };
 }
-
 export async function deletePin(): Promise<void> {
   await SecureStore.deleteItemAsync(PIN_KEY);
 }

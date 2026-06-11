@@ -48,10 +48,10 @@ export default function PrivateFolderScreen() {
       if (success) {
         loadFolders();
       }
-    }, [success]),
+    }, [success])
   );
 
-  // Create folder
+  // Create private/public folder
   async function createFolder() {
     if (!folderName.trim()) {
       Alert.alert("Folder name required", "Please enter folder name");
@@ -83,7 +83,7 @@ export default function PrivateFolderScreen() {
     }
   }
 
-  // Delete folder and files
+  // Delete folder and all files inside
   async function deleteFolder(folder: Folder) {
     Alert.alert(
       "Delete Folder",
@@ -107,7 +107,7 @@ export default function PrivateFolderScreen() {
                   const localFile = new File(item.localUri);
 
                   if (localFile.exists) {
-                    localFile.delete();
+                    await localFile.delete();
                   }
                 }
               }
@@ -131,7 +131,7 @@ export default function PrivateFolderScreen() {
             }
           },
         },
-      ],
+      ]
     );
   }
 
@@ -160,6 +160,7 @@ export default function PrivateFolderScreen() {
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>Private Folders</Text>
+
           <Text style={styles.subtitle}>
             {folders.length} private folder{folders.length === 1 ? "" : "s"}
           </Text>
@@ -194,6 +195,7 @@ export default function PrivateFolderScreen() {
 
             <View style={{ flex: 1 }}>
               <Text style={styles.infoTitle}>Secure private folders</Text>
+
               <Text style={styles.infoSubtitle}>
                 Files inside private folders are protected by your PIN.
               </Text>
@@ -217,10 +219,18 @@ export default function PrivateFolderScreen() {
               pressed && styles.pressed,
             ]}
           >
-            <Ionicons name="key-outline" size={21} color="#10B981" />
-            <Text style={{ color: "#065F46", fontWeight: "900" }}>
-              Change PIN
-            </Text>
+            <View style={styles.changePinIconBox}>
+              <Ionicons name="key-outline" size={22} color="#10B981" />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.changePinTitle}>Change PIN</Text>
+              <Text style={styles.changePinSubtitle}>
+                Update your private vault security PIN
+              </Text>
+            </View>
+
+            <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
           </Pressable>
         }
         renderItem={({ item }) => (
@@ -411,19 +421,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
   },
 
-  changePinButton: {
-    marginTop: 4,
-    minHeight: 56,
-    borderRadius: 22,
-    backgroundColor: "#ECFDF5",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    flexDirection: "row",
-    gap: 10,
-  },
-
   listContent: {
     paddingHorizontal: 20,
     paddingBottom: 130,
@@ -520,6 +517,47 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
     borderColor: "#FEE2E2",
+  },
+
+  changePinButton: {
+    marginTop: 8,
+    minHeight: 72,
+    borderRadius: 24,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#D1FAE5",
+    flexDirection: "row",
+    gap: 12,
+    padding: 14,
+
+    elevation: 2,
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+
+  changePinIconBox: {
+    width: 46,
+    height: 46,
+    borderRadius: 17,
+    backgroundColor: "#ECFDF5",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  changePinTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#0F172A",
+  },
+
+  changePinSubtitle: {
+    marginTop: 3,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#64748B",
   },
 
   emptyBox: {
