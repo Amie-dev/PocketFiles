@@ -14,8 +14,7 @@ type Props = {
 export default function FileCard({ item, index, onOpen }: Props) {
   const heightType = index % 3;
 
-  const cardHeight =
-    heightType === 0 ? 260 : heightType === 1 ? 210 : 180;
+  const cardHeight = heightType === 0 ? 260 : heightType === 1 ? 210 : 180;
 
   const isImage = item.type === "image" && item.localUri;
 
@@ -73,9 +72,7 @@ export default function FileCard({ item, index, onOpen }: Props) {
           {item.name}
         </Text>
 
-        <Text style={styles.meta}>
-          {item.isPrivate ? "Private" : "Public"}
-        </Text>
+        <Text style={styles.meta}>{item.isPrivate ? "Private" : "Public"}</Text>
       </View>
     </Pressable>
   );

@@ -9,8 +9,8 @@ import { useLock } from "@/context/LockProvider";
 import { hasPin } from "@/utils/pinStorage";
 
 export default function PinModeSwitcher() {
-  const { isLocked, goPrivate, goPublic } = useLock();
-
+  const { isPrivate,isLocked, goPrivate, goPublic } = useLock();
+// console.log(isPrivate,isLocked)
   const [isPinCreated, setIsPinCreated] = useState(false);
   const [showCreatePin, setShowCreatePin] = useState(false);
   const [showVerifyPin, setShowVerifyPin] = useState(false);
@@ -25,7 +25,7 @@ export default function PinModeSwitcher() {
   }
 
   function handlePress() {
-    if (isLocked) {
+    if (isPrivate) {
       goPublic();
       router.replace("/(publictabs)");
       return;
@@ -49,20 +49,20 @@ export default function PinModeSwitcher() {
         onPress={handlePress}
         style={({ pressed }) => [
           styles.button,
-          isLocked && styles.privateButton,
+          isPrivate && styles.privateButton,
           pressed && styles.buttonPressed,
         ]}
       >
         <View
           style={[
             styles.iconCircle,
-            isLocked && styles.privateIconCircle,
+            isPrivate && styles.privateIconCircle,
           ]}
         >
           <Ionicons
-            name={isLocked ? "lock-open" : "lock-closed"}
+            name={isPrivate ? "lock-open" : "lock-closed"}
             size={22}
-            color={isLocked ? "#10B981" : "#4b5d82"}
+            color={isPrivate ? "#10B981" : "#4B5D82"}
           />
         </View>
       </Pressable>

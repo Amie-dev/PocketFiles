@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { and, eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import FileGrid, { VaultItem } from "@/components/FileGrid";
+import { useLock } from "@/context/LockProvider";
 import { db } from "../../../db/database";
 import { FileItem, filesTable } from "../../../db/schema";
 import migrations from "../../../drizzle/migrations";
@@ -15,6 +16,8 @@ type FilterType = "all" | "image" | "pdf" | "doc" | "favorite";
 
 export default function HomeScreen() {
   const { success, error } = useMigrations(db, migrations);
+  const { isPrivate } = useLock();
+  console.log("isPrivate =", isPrivate);
 
   const [items, setItems] = useState<VaultItem[]>([]);
   const [search, setSearch] = useState("");
@@ -24,8 +27,8 @@ export default function HomeScreen() {
     const files: FileItem[] = await db
       .select()
       .from(filesTable)
-      .where( eq(filesTable.isPrivate, true));
-      // .where(and(isNull(filesTable.folderId), eq(filesTable.isPrivate, true)));
+      .where(eq(filesTable.isPrivate, isPrivate));
+    // .where(and(isNull(filesTable.folderId), eq(filesTable.isPrivate, true)));
 
     const mappedItems: VaultItem[] = files
       .map((file) => ({
@@ -71,18 +74,6 @@ export default function HomeScreen() {
 
   const handleOpen = useCallback((item: VaultItem) => {
     router.push(`/files/${item.id}`);
-  }, []);
-
-  const handleMove = useCallback((item: VaultItem) => {
-    console.log("Move:", item.name);
-  }, []);
-
-  const handleDelete = useCallback((item: VaultItem) => {
-    console.log("Delete:", item.name);
-  }, []);
-
-  const handleShare = useCallback((item: VaultItem) => {
-    console.log("Share:", item.name);
   }, []);
 
   if (error) {
@@ -161,13 +152,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <FileGrid
-        items={filteredItems}
-        onOpen={handleOpen}
-        onMove={handleMove}
-        onDelete={handleDelete}
-        onShare={handleShare}
-      />
+      <FileGrid items={filteredItems} onOpen={handleOpen} />
     </SafeAreaView>
   );
 }

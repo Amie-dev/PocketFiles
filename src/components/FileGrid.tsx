@@ -22,17 +22,13 @@ type ColumnItem = {
 type Props = {
   items: VaultItem[];
   onOpen: (item: VaultItem) => void;
-  onMove?: (item: VaultItem) => void;
-  onDelete?: (item: VaultItem) => void;
-  onShare?: (item: VaultItem) => void;
+  
 };
 
 function FileGrid({
   items = [],
   onOpen,
-  onMove,
-  onDelete,
-  onShare,
+  
 }: Props) {
   const columns = useMemo(() => {
     const left: ColumnItem[] = [];
@@ -77,9 +73,7 @@ function FileGrid({
                 item={item}
                 index={originalIndex}
                 onOpen={onOpen}
-                onMove={onMove}
-                onDelete={onDelete}
-                onShare={onShare}
+               
               />
             ))}
           </View>
@@ -91,9 +85,7 @@ function FileGrid({
                 item={item}
                 index={originalIndex}
                 onOpen={onOpen}
-                onMove={onMove}
-                onDelete={onDelete}
-                onShare={onShare}
+                
               />
             ))}
           </View>

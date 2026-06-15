@@ -4,7 +4,7 @@ import { useLock } from "@/context/LockProvider";
 
 export function LockWatcher() {
   const appState = useRef<AppStateStatus>(AppState.currentState);
-  const { goPublic } = useLock();
+  const { lock } = useLock();
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
@@ -13,16 +13,14 @@ export function LockWatcher() {
         nextState === "inactive" || nextState === "background";
 
       if (wasActive && goingBackground) {
-        // when app closes / screen off / background
-        // private mode automatically becomes public
-        goPublic();
+        lock();
       }
 
       appState.current = nextState;
     });
 
     return () => subscription.remove();
-  }, [goPublic]);
+  }, [lock]);
 
   return null;
 }

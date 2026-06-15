@@ -1,37 +1,76 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
-  useContext,
-  useState,
   ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
 
+const MODE_KEY = "pocketfiles_mode";
+
 type LockContextType = {
+  isPrivate: boolean;
   isLocked: boolean;
-  goPrivate: () => void;
-  goPublic: () => void;
+  isReady: boolean;
+  goPrivate: () => Promise<void>;
+  goPublic: () => Promise<void>;
+  lock: () => void;
+  unlock: () => void;
 };
 
 const LockContext = createContext<LockContextType | null>(null);
 
 export function LockProvider({ children }: { children: ReactNode }) {
-  // false = public mode by default
-  // true = private/locked mode
+  const [isPrivate, setIsPrivate] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-  const goPrivate = () => {
-    setIsLocked(true);
-  };
+  useEffect(() => {
+    async function loadMode() {
+      const savedMode = await AsyncStorage.getItem(MODE_KEY);
 
-  const goPublic = () => {
+      if (savedMode === "private") {
+        setIsPrivate(true);
+        setIsLocked(false);
+      }
+
+      setIsReady(true);
+    }
+
+    loadMode();
+  }, [isLocked,isPrivate]);
+
+  async function goPrivate() {
+    setIsPrivate(true);
     setIsLocked(false);
-  };
+    await AsyncStorage.setItem(MODE_KEY, "private");
+  }
+
+  async function goPublic() {
+    setIsPrivate(false);
+    setIsLocked(false);
+    await AsyncStorage.setItem(MODE_KEY, "public");
+  }
+
+  function lock() {
+    setIsLocked(true);
+  }
+
+  function unlock() {
+    setIsLocked(false);
+  }
 
   return (
     <LockContext.Provider
       value={{
+        isPrivate,
         isLocked,
+        isReady,
         goPrivate,
         goPublic,
+        lock,
+        unlock,
       }}
     >
       {children}
