@@ -354,7 +354,7 @@ export default function CreateScreen() {
 
             <View style={{ flex: 1 }}>
               <Text style={styles.privateTitle}>
-                {isPrivate ? "Private Vault" : "Public Vault"}
+                {isPrivate ? "Private File" : "Public File"}
               </Text>
 
               <Text style={styles.privateSubtitle}>

@@ -63,8 +63,8 @@ export default {
       [
         "expo-splash-screen",
         {
-          backgroundColor: "#7b99b5",
-          image: "./assets/images/splash-icon.png",
+          backgroundColor: "#397fc1",
+          image: "./assets/images/icon.png",
           imageWidth: 160,
         },
       ],

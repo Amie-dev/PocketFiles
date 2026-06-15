@@ -349,8 +349,8 @@ export default function PrivateFolderScreen() {
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <>
-                  <Ionicons name="add" size={22} color="#FFFFFF" />
-                  <Text style={styles.createText}>Create Folder</Text>
+                  <Ionicons name="folder" size={22} color="#FFFFFF" />
+                  <Text style={styles.createText}>Save Folder</Text>
                 </>
               )}
             </Pressable>
