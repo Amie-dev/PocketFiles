@@ -17,7 +17,7 @@ type FilterType = "all" | "image" | "pdf" | "doc" | "favorite";
 export default function HomeScreen() {
   const { success, error } = useMigrations(db, migrations);
   const { isPrivate } = useLock();
-  console.log("isPrivate =", isPrivate);
+  // console.log("isPrivate =", isPrivate);
 
   const [items, setItems] = useState<VaultItem[]>([]);
   const [search, setSearch] = useState("");

@@ -1,8 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import * as DocumentPicker from "expo-document-picker";
 import { eq } from "drizzle-orm";
+import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
+
+import { Directory, File, Paths } from "expo-file-system";
 import {
   ActivityIndicator,
   Alert,
@@ -17,7 +19,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { db } from "../../../db/database";
-import { filesTable, foldersTable, Folder } from "../../../db/schema";
+import { filesTable, Folder, foldersTable } from "../../../db/schema";
 
 type FileType = "image" | "pdf" | "doc" | "other";
 
@@ -72,6 +74,30 @@ function normalizeTag(value: string) {
     .replace(/[^a-z0-9-_]/g, "");
 }
 
+// ------
+function createSafeFileName(name: string) {
+  const cleanName = name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  return `${Date.now()}-${cleanName}`;
+}
+
+async function saveFileToPermanentStorage(pickedFile: PickedFile) {
+  const vaultFolder = new Directory(Paths.document, "pocketfiles");
+
+  vaultFolder.create({
+    idempotent: true,
+    intermediates: true,
+  });
+
+  const safeName = createSafeFileName(pickedFile.name);
+
+  const sourceFile = new File(pickedFile.uri);
+  const savedFile = new File(vaultFolder, safeName);
+
+  await sourceFile.copy(savedFile);
+  console.log(sourceFile);
+  return savedFile.uri;
+}
+
 // -------------------------
 // Screen
 // -------------------------
@@ -111,7 +137,6 @@ export default function CreateScreen() {
   // -------------------------
   // Pick file
   // -------------------------
-
   async function pickFile() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -123,6 +148,7 @@ export default function CreateScreen() {
       if (result.canceled) return;
 
       const asset = result.assets[0];
+
       const extension = getExtension(asset.name);
       const type = getFileType(extension);
 
@@ -188,8 +214,7 @@ export default function CreateScreen() {
   }
 
   function handleTagChange(text: string) {
-    const shouldCreateTag =
-      text.includes(",") || text.endsWith(" ");
+    const shouldCreateTag = text.includes(",") || text.endsWith(" ");
 
     if (shouldCreateTag) {
       const cleanTag = normalizeTag(text.replace(",", ""));
@@ -225,15 +250,17 @@ export default function CreateScreen() {
 
       const now = new Date().toISOString();
 
+      const permanentUri = await saveFileToPermanentStorage(pickedFile);
+
       await db.insert(filesTable).values({
         name: fileName.trim(),
         type: pickedFile.type,
         extension: pickedFile.extension,
-        localUri: pickedFile.uri,
+        localUri: permanentUri,
         folderId: selectedFolderId,
         isPrivate,
         size: pickedFile.size,
-        thumbnailUri: pickedFile.type === "image" ? pickedFile.uri : null,
+        thumbnailUri: pickedFile.type === "image" ? permanentUri : null,
         isFavorite: false,
         tags: JSON.stringify(tags),
         createdAt: now,
